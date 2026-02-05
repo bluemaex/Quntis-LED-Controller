@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quntis Monitor Light</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f0f0f0;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 480px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        color: #333;
+      }
+      .power-buttons {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .btn {
+        flex: 1;
+        padding: 14px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        background: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        border-color: #999;
+      }
+      .btn.active {
+        background: #2196f3;
+        color: white;
+        border-color: #2196f3;
+      }
+      .control-group {
+        margin-bottom: 24px;
+      }
+      .control-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #666;
+      }
+      .control-value {
+        font-weight: 600;
+        color: #333;
+      }
+      input[type='range'] {
+        width: 100%;
+        height: 40px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+      input[type='range']::-webkit-slider-track {
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #2196f3;
+        margin-top: -8px;
+      }
+      input[type='range']::-moz-range-track {
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 4px;
+      }
+      input[type='range']::-moz-range-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #2196f3;
+        border: none;
+      }
+      .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #999;
+        margin-top: 4px;
+      }
+      .footer {
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid #e0e0e0;
+        font-size: 12px;
+        color: #999;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Quntis Monitor Light</h1>
+
+      <div class="power-buttons">
+        <button class="btn" id="btnOff" onclick="setPower(false)">OFF</button>
+        <button class="btn" id="btnOn" onclick="setPower(true)">ON</button>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Brightness</span>
+          <span class="control-value" id="brightnessValue">50%</span>
+        </div>
+        <input
+          type="range"
+          id="brightness"
+          min="0"
+          max="100"
+          value="50"
+          onchange="updateBrightness(this.value)"
+        />
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">
+          <span>Color Temperature</span>
+          <span class="control-value" id="colorValue">Neutral</span>
+        </div>
+        <input
+          type="range"
+          id="colorTemp"
+          min="0"
+          max="100"
+          value="50"
+          onchange="updateColorTemp(this.value)"
+        />
+        <div class="range-labels">
+          <span>Cold</span>
+          <span>Warm</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span id="deviceInfo">Loading...</span><br />
+        http://quntis.local
+      </div>
+    </div>
+
+    <script>
+      const labels = ['Cold', 'Cool', 'Neutral', 'Warm', 'Very Warm']
+
+      fetch('/api/info')
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById('deviceInfo').textContent = data.name + ' \u2022 ' + data.version
+        })
+
+      fetchState()
+
+      function fetchState() {
+        fetch('/api/status')
+          .then((response) => response.json())
+          .then(updateUI)
+          .catch(() => console.log('Failed to fetch status'))
+      }
+
+      function updateState(data) {
+        fetch('/api/set', {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then((response) => response.json())
+          .then(updateUI)
+      }
+
+      function setPower(on) {
+        updateState({ state: on ? 'ON' : 'OFF' })
+      }
+
+      function updateBrightness(value) {
+        document.getElementById('brightnessValue').textContent = value + '%'
+        updateState({ brightness: parseInt(value) })
+      }
+
+      function updateColorTemp(value) {
+        const index = Math.min(Math.floor(value / 25), 4)
+        document.getElementById('colorValue').textContent = labels[index]
+        updateState({ color_temp: parseInt(value) })
+      }
+
+      function updateUI(res) {
+        document.getElementById('btnOn').className = 'btn' + (res.state === 'ON' ? ' active' : '')
+        document.getElementById('btnOff').className = 'btn' + (res.state === 'OFF' ? ' active' : '')
+        document.getElementById('brightness').value = res.brightness
+        document.getElementById('brightnessValue').textContent = res.brightness + '%'
+        document.getElementById('colorTemp').value = res.color_temp
+
+        const index = Math.min(Math.floor(res.color_temp / 25), 4)
+        document.getElementById('colorValue').textContent = labels[index]
+      }
+    </script>
+  </body>
+</html>
