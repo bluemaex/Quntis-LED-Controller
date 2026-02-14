@@ -222,7 +222,10 @@ int MqttManager::miredsToPercent(int mireds) {
 }
 
 void MqttManager::loadState() {
-    _prefs.begin("quntis", true);
+    if (!_prefs.begin("quntis", true)) {
+        Serial.println("[NVS] No saved state found, using defaults");
+        return;
+    }
     _power_state = _prefs.getBool("power", false);
     _brightness = _prefs.getInt("brightness", 50);
     _color_temp = _prefs.getInt("color_temp", 250);

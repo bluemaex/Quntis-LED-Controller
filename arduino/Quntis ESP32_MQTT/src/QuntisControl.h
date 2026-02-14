@@ -11,11 +11,15 @@
 //=================================================================================================
 #include <xn297.h>
 
-// Pin definitions for ESP32 VSPI (default SPI bus)
-// SCK_PIN 18,
-// MOSI_PIN 23
-// MISO_PIN 19
-#define CE_PIN 17
+// ESP32-C3 Super Mini (lolin_c3_mini) SPI pins for NRF24L01:
+// GND  → GND    (black)
+// VCC  → 3.3V   (gray)
+// SCK  → GPIO 2 (red)
+// MOSI → GPIO 4 (violet)
+// MISO → GPIO 3 (orange)
+// CSN  → GPIO 5 (white)
+// CE   → GPIO 1 (brown)
+#define CE_PIN 1
 #define CSN_PIN 5
 
 #define TX_REPEAT 6

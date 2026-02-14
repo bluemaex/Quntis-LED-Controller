@@ -26,13 +26,6 @@ MqttManager* mqttManager = nullptr;
 WebUI* webUI = nullptr;
 
 void setupWiFi() {
-    Serial.println("\n");
-    Serial.println("╔════════════════════════════════════╗");
-    Serial.println("║  Quntis LED Controller v1.0        ║");
-    Serial.println("║  ESP32 + NRF24L01                  ║");
-    Serial.println("╚════════════════════════════════════╝");
-    Serial.println("\n");
-
     WiFi.mode(WIFI_STA);
     WiFi.setHostname(WIFI_HOSTNAME);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -69,10 +62,14 @@ void setupMDNS() {
 
 void setup() {
     Serial.begin(115200);
-    delay(100);
+    delay(1000);
 
-    setupWiFi();
-    setupMDNS();
+    Serial.println("\n");
+    Serial.println("╔════════════════════════════════════╗");
+    Serial.println("║  Quntis LED Controller v1.0        ║");
+    Serial.println("║  ESP32 + NRF24L01                  ║");
+    Serial.println("╚════════════════════════════════════╝");
+    Serial.println("\n");
 
     Serial.println("\n[RF24 Init]");
     if (!quntis.begin()) {
@@ -82,6 +79,9 @@ void setup() {
     }
 
     Serial.println("✓ RF24 initialized");
+
+    setupWiFi();
+    setupMDNS();
 
     Serial.println("\n[MQTT Init]");
     mqttManager = new MqttManager(&quntis);
