@@ -1,0 +1,89 @@
+substitutions:
+  slug: quntis-monitor-esphome
+  name: "Quntis Monitor Light ESPHome"
+  description: quntis monitor light controller
+
+esphome:
+  platformio_options:
+    board_build.cdc_on_boot: "1"
+
+esp32:
+  name: ${slug}
+  friendly_name: ${name}
+  board: lolin_c3_mini
+  variant: esp32c3
+  framework:
+    type: arduino
+
+external_components:
+  source: github://bluemaex/Quntis-LED-Controller
+  components: [ quntis_light ]
+
+logger:
+  log_level: DEBUG
+
+api:
+  encryption:
+    key: !secret esphome_encryption_key
+
+ota:
+  platform: esphome
+
+wifi:
+  ssid: !secret esphome_wifi_ssid
+  password: !secret esphome_wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: ${slug} Fallback Hotspot
+    password: 88888888
+
+captive_portal:
+
+light:
+  - platform: quntis_light
+    id: quntis_light_id
+    name: "Quntis Monitor Light"
+    restore_mode: RESTORE_DEFAULT_OFF
+
+    # SPI pin configuration according to your wiring
+    ce_pin: 1
+    cs_pin: 5
+    spi_clk_pin: 2
+    spi_mosi_pin: 4
+    spi_miso_pin: 3
+
+    # Light configuration parameters
+    brightness_steps: 75
+    color_temp_steps: 30
+    min_mireds: 153       # 6500K (coldest)
+    max_mireds: 500       # 2000K (warmest)
+    step_delay: 50ms
+    
+    # you need to discover your device address by RF sniffing the original remote
+    # see the Quntis Sniffer project for details.
+    device_address: [0x20, 0x21, 0x01, 0x31, 0xAA] 
+
+switch:
+  - platform: template
+    name: "Calibrate Quntis Light"
+    id: quntis_calibrate
+    icon: "mdi:tune"
+    optimistic: false
+    lambda: |-
+      return static_cast<esphome::quntis_light::QuntisLight*>(id(quntis_light_id).get_output())->is_calibrating();
+    turn_on_action:
+      - logger.log: "Calibration of the device started"
+      - lambda: |-
+          static_cast<esphome::quntis_light::QuntisLight*>(id(quntis_light_id).get_output())->calibrate();
+    turn_off_action:
+      - logger.log: "Calibration will stop when complete"
+
+button:
+  - platform: template
+    name: "Quntis Power State Override"
+    icon: "mdi:sync"
+    on_press:
+      - lambda: |-
+          auto *out = static_cast<esphome::quntis_light::QuntisLight*>(id(quntis_light_id).get_output());
+          out->override_power_state(!out->is_on());
