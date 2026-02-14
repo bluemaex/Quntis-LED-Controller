@@ -1,0 +1,4 @@
+.esphome
+.pio
+__pycache__
+secrets.yaml
