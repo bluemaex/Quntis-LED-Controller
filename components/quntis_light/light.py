@@ -58,6 +58,9 @@ async def to_code(config):
     # (enabling access to the private write_register function), see original README for details.
     cg.add_library("https://github.com/bluemaex/RF24-patched-xn297#37ab5462cbb4cf3d97aba71fb363f41e0b0d74b9", None)
 
+    # ESPHome 2026.2+
+    cg.add_library("SPI", None)
+    
     var = cg.new_Pvariable(config[CONF_OUTPUT_ID])
     await cg.register_component(var, config)
     await light.register_light(var, config)
