@@ -56,7 +56,7 @@ CONFIG_SCHEMA = (
 async def to_code(config):
     # This links to the patched RF24 library which supports the XN297 chip used in the Quntis remote
     # (enabling access to the private write_register function), see original README for details.
-    cg.add_library("https://github.com/bluemaex/RF24-patched-xn297#37ab5462cbb4cf3d97aba71fb363f41e0b0d74b9", None)
+    cg.add_library("https://github.com/bluemaex/RF24-patched-xn297#1911565bfd8f8e12df2b24b313db24eae8e5c2a1", None)
 
     # ESPHome 2026.2+
     cg.add_library("SPI", None)
