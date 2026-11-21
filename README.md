@@ -46,6 +46,28 @@ The `Address:` line is what you want. Copy those five hex values — that's your
 If nothing shows up after a lot of button pressing, try holding the remote closer (practically touching the antenna), or restart the sniffer with `r` in the serial monitor and try again. The RF signal is weak and proximity matters. 
 
 
+### ScreenLinear Glow White sniffer profile
+
+The sniffer can also capture the 41 cm ScreenLinear Glow White (`LI-HY-0214-WT`). Open the serial monitor at 115200 baud, send `g`, and use the original remote near the antenna. Send `p` to return to the Pro+ profile.
+
+For the ESP32-C3 Super Mini, select the `lolin_c3_mini` environment. It uses DIO flash mode and native USB.
+
+| nRF24L01+ pin | ESP32-C3 Super Mini |
+| --- | --- |
+| CE | GPIO1 |
+| CSN | GPIO5 |
+| SCK | GPIO6 |
+| MISO | GPIO3 |
+| MOSI | GPIO4 |
+| GND | GND |
+| VCC on bare module | 3V3 |
+
+On the tested Glow White, matching 1 Mbit/s frames appeared on nRF24 channels 19, 53 and 80. The `g` profile listens on channel 19 and prints CRC-checked frames with a five-byte address, eleven data bytes and a two-byte CRC. The last decoded data byte is the sum of the preceding ten modulo 256.
+
+The decoded payload carries front brightness at byte 5, front color temperature at byte 6 and a rear-light field at byte 7, counting from zero. The tested front brightness endpoints were `0x1A` and `0xFF` while lit, with `0x00` for off. The color endpoints were `0x00` for warm and `0xFF` for cool. Repeating captured states confirmed these changes and rear on/off on one unit. The [independent 26-inch Glow-family investigation](https://github.com/willadamskeane/quntis-monitor-light-esphome/blob/main/docs/protocol.md) observed the same radio channels and frame structure and documents a rolling transmit field.
+
+Glow captures require a transmitter that handles the eleven-byte payload and Glow channel set. The ESPHome and MQTT controllers in this repository implement the Pro+ profile.
+
 ## Step 2: Choose your version
 
 ### MQTT Version
